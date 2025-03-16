@@ -10,7 +10,7 @@ async function addUsersToRoom(roomId, userIds) {
         VALUES ${userIds.map(() => "(?, ?)").join(", ")}
     `;
 
-    let params = userIds.flatMap(userId => [userId, roomId]); // Use correct user IDs
+    let params = userIds.flatMap(userId => [userId, roomId]);
 
     try {
         const [results] = await database.execute(createGroupUsersSQL, params);
@@ -68,9 +68,7 @@ GROUP BY r.room_id, r.name, ru.room_id, ru.user_id;
     `;
 
     try {
-        // console.log("Fetching user groups with last message timestamp and unread count:", username);
         const [results] = await database.execute(sql, [username]);
-        // console.log("User groups with message data:", results);
         return results;
     } catch (err) {
         console.error("Error fetching user groups with messages:", err);
@@ -80,7 +78,6 @@ GROUP BY r.room_id, r.name, ru.room_id, ru.user_id;
 
 async function updateLastReadMessage(username, roomId) {
     try {
-        // Step 1: Get the latest message ID for the room
         const selectSQL = `
             SELECT MAX(m.message_id) AS maxMessageId
             FROM message m
@@ -93,8 +90,6 @@ async function updateLastReadMessage(username, roomId) {
             console.log("No messages found to mark as read.");
             return;
         }
-
-        // Step 2: Update the user's last_read_message with the latest message ID
         const updateSQL = `
             UPDATE room_user ru
             JOIN user u ON ru.user_id = u.user_id

@@ -131,8 +131,6 @@ app.post('/loggingIn', async (req, res) => {
             req.session.authenticated = true;
             req.session.username = username;
             req.session.cookie.maxAge = expireTime;
-
-            // 🔍 Fetch the user's groups before rendering the page
             try {
                 const userGroups = await db_room_user.getUserGroupsWithMessages(username);
                 return res.render('loggedIn', {
@@ -161,13 +159,8 @@ app.get('/addNewGroup', async (req, res) => {
 
 app.post('/submitGroup', async (req, res) => {
     const groupName = req.body.groupName;
-    let memberUsernames = req.body.members || []; // Ensure it's always an array
+    let memberUsernames = req.body.members || []; 
     const currentUsername = req.session.username;
-
-    // console.log("Group Name:", groupName);
-    // console.log("Raw Selected Members:", memberUsernames);
-
-    // Ensure `memberUsernames` is always an array
     if (!Array.isArray(memberUsernames)) {
         memberUsernames = [memberUsernames];
     }
@@ -178,28 +171,21 @@ app.post('/submitGroup', async (req, res) => {
         memberUsernames.push(currentUsername);
     }
 
-    // console.log("Final Members (Usernames):", memberUsernames);
-
     const groupCreationTime = getCurrentDatetime();
 
     try {
-        // 🔍 Step 1: Convert usernames to user IDs
         const userIds = await db_user.getUserIdsByUsername(memberUsernames);
         console.log("Mapped User IDs:", userIds);
 
         if (userIds.length === 0) {
             return res.render('errorMessage', { error: "Failed to find user IDs." });
         }
-
-        // 🔥 Step 2: Create the Room
         const roomId = await db_room.createGroup({
             group_name: groupName,
             group_start_datetime: groupCreationTime
         });
 
         console.log(`Group created with ID: ${roomId}`);
-
-        // 🔥 Step 3: Assign Users to Room (Insert into room_user)
         const addedUsers = await db_room_user.addUsersToRoom(roomId, userIds);
         console.log(`Added ${addedUsers.length} users to room ${roomId}`);
 
@@ -241,13 +227,8 @@ app.get('/chatroom/:roomId', sessionValidation, async (req, res) => {
     const username = req.session.username;
 
     try {
-        // 1) Fetch all messages for this room
         const messages = await db_message.getMessagesByRoom(roomId);
-
-        // 2) Fetch reaction counts for each message
         const reactionRows = await db_emoji_reaction.getReactionsByRoom(roomId);
-
-        // We'll build a map: { message_id -> [ {emoji_id, image, name, total_count}, ... ] }
         const reactionMap = {};
         for (let row of reactionRows) {
             if (!reactionMap[row.message_id]) {
@@ -260,8 +241,6 @@ app.get('/chatroom/:roomId', sessionValidation, async (req, res) => {
                 total_count: row.total_count
             });
         }
-
-        // 3) Render the chatroom with messages + reactionMap
         res.render('chatroom', {
             roomId,
             messages,
@@ -307,22 +286,17 @@ app.get('/inviteUsers/:roomId', sessionValidation, async (req, res) => {
 
 app.post('/inviteUsers/:roomId/submit', sessionValidation, async (req, res) => {
     const roomId = req.params.roomId;
-    let invitees = req.body.invitees; // could be a single value or an array
+    let invitees = req.body.invitees; 
 
-    // If nothing is checked, just redirect back
     if (!invitees) {
         return res.redirect(`/chatroom/${roomId}`);
     }
-
-    // Make sure we have an array of user IDs
     if (!Array.isArray(invitees)) {
         invitees = [invitees];
     }
 
     try {
-        // Insert these user IDs into room_user
         await db_room_user.addUsersToRoom(roomId, invitees);
-        // Then redirect back to the chatroom or wherever
         res.redirect(`/chatroom/${roomId}`);
     } catch (err) {
         console.error("Error adding users to room:", err);
@@ -352,10 +326,10 @@ app.post('/sendMessage', sessionValidation, async (req, res) => {
 });
 
 app.post('/messages/:messageId/react', async (req, res) => {
-    const messageId = req.params.messageId; // from URL
-    const emojiId = req.body.emojiId;         // from form (button value)
-    const roomId = req.body.roomId;           // from hidden input
-    const username = req.session.username;    // from session
+    const messageId = req.params.messageId;
+    const emojiId = req.body.emojiId;         
+    const roomId = req.body.roomId;           
+    const username = req.session.username;    
 
     try {
         const userIds = await db_user.getUserIdsByUsername([username]);
