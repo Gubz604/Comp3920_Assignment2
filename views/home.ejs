@@ -1,3 +1,10 @@
 <%- include ("templates/header") %>
-HOMEPAGE
+    <main>
+        <form action="/signup" method="post">
+            <button type="submit" name="action" value="signup">Sign Up</button>
+        </form>
+        <form action="/login" method="post">
+            <button type="submit" name="action" value="login">Log In</button>
+        </form>
+    </main>
 <%- include("templates/footer") %>

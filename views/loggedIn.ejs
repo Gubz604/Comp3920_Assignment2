@@ -1,0 +1,27 @@
+<%- include("templates/header") %>
+
+    <main>
+        <h1>Hello, <%= name %>!</h1>
+
+        <h2>Your Groups</h2>
+        <% if (groups && groups.length> 0) { %>
+            <ul>
+                <% groups.forEach(group=> { %>
+                    <li>
+                        <a href="/chatroom/<%= group.room_id %>">
+                            <%= group.room_name ? group.room_name : "Unnamed Group" %>
+                        </a>
+                        - Last message: <%= group.last_message_time ? new Date(group.last_message_time).toLocaleString()
+                            : "No messages yet" %>
+                            - Unread: <%= group.unread_messages || 0 %>
+                    </li>
+                    <% }) %>
+            </ul>
+            <% } else { %>
+                <p>You are not part of any groups yet.</p>
+                <% } %>
+                    <a href="/addNewGroup"><button>New Group</button></a>
+                    <a href="/logout"><button>Sign out</button></a>
+    </main>
+
+    <%- include("templates/footer") %>

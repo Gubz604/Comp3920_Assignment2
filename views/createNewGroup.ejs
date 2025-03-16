@@ -1,0 +1,22 @@
+<h1>Create A Group</h1>
+    
+<form action="/submitGroup" method="POST">
+    <label for="groupName">Group Name:</label>
+    <input type="text" id="groupName" name="groupName" required>
+    
+    <h3>Select Members:</h3>
+    <div style="height: 150px; overflow-y: scroll; border: 1px solid black; padding: 10px;">
+        <% if (users && users.length > 0) { %>
+            <% users.forEach(user => { %>
+                <div>
+                    <input type="checkbox" id="<%= user.username %>" name="members" value="<%= user.username %>">
+                    <label for="<%= user.id %>"><%= user.username %></label>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No users available</p>
+        <% } %>
+    </div>
+    
+    <button type="submit">Create Group</button>
+</form>

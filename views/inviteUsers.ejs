@@ -1,0 +1,35 @@
+<%- include('templates/header') %>
+
+    <main>
+        <h1>Invite People to Room <%= roomId %>
+        </h1>
+
+        <h2>Current Members</h2>
+        <ul>
+            <% currentMembers.forEach(member=> { %>
+                <li>
+                    <%= member.username %>
+                </li>
+                <% }) %>
+        </ul>
+
+        <h2>Add New Members</h2>
+        <!-- The form posts to /inviteUsers/ROOM_ID/submit -->
+        <form action="/inviteUsers/<%= roomId %>/submit" method="POST">
+            <% if (nonMembers.length> 0) { %>
+                <% nonMembers.forEach(user=> { %>
+                    <div>
+                        <label>
+                            <input type="checkbox" name="invitees" value="<%= user.user_id %>">
+                            <%= user.username %>
+                        </label>
+                    </div>
+                    <% }) %>
+                        <button type="submit">Add Selected Users</button>
+                        <% } else { %>
+                            <p>No additional users available to invite.</p>
+                            <% } %>
+        </form>
+    </main>
+
+    <%- include('templates/footer') %>

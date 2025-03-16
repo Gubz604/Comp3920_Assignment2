@@ -1,0 +1,74 @@
+<%- include("templates/header") %>
+
+<main>
+    <h1>Chatroom</h1>
+    <button onclick="window.location.href='/inviteUsers/<%= roomId %>'">Invite People</button>
+
+    <div class="messages-container">
+        <% if (messages.length > 0) { %>
+            <% messages.forEach(message => { %>
+                <div class="message">
+                    <strong>
+                        <%= message.username %>
+                    </strong>
+                    <span>
+                        <%= new Date(message.sent_datetime).toLocaleString() %>
+                    </span>
+                    <p>
+                        <%= message.text %>
+                    </p>
+
+                    <!-- Reactions -->
+                    <% const reactionsForMessage = reactionMap[message.message_id] || []; %>
+                    <div class="reactions">
+                        <% reactionsForMessage.forEach(r => { %>
+                            <span class="reaction">
+                                <img src="<%= r.image %>" alt="<%= r.name %>" width="20" height="20">
+                                <%= r.total_count %>
+                            </span>
+                        <% }) %>
+                    </div>
+
+                    <!-- Reaction Form (example for 2 emojis) -->
+                    <form action="/messages/<%= message.message_id %>/react" method="POST" style="display:inline;">
+                        <input type="hidden" name="roomId" value="<%= roomId %>">
+                        <!-- For a 'smile' reaction -->
+                        <button type="submit" name="emojiId" value="1">
+                            <img src="/images/smile.svg" alt="Smile" width="20" height="20">
+                        </button>
+                        <!-- For a 'sad' reaction -->
+                        <button type="submit" name="emojiId" value="2">
+                            <img src="/images/sad.svg" alt="Sad" width="20" height="20">
+                        </button>
+                    </form>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No messages yet.</p>
+        <% } %>
+    </div>
+
+    <!-- Mark All as Read Button -->
+    <button id="markReadBtn">Mark All as Read</button>
+    <script>
+        document.getElementById('markReadBtn').addEventListener('click', function () {
+            fetch('/chatroom/<%= roomId %>/markAsRead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(response => {
+                if (response.ok) {
+                    alert('Messages marked as read!');
+                }
+            });
+        });
+    </script>
+
+    <!-- Message Input Form -->
+    <form action="/sendMessage" method="POST">
+        <input type="hidden" name="roomId" value="<%= roomId %>">
+        <textarea name="messageContent" placeholder="Type your message here" required></textarea>
+        <button type="submit">Send</button>
+    </form>
+</main>
+
+<%- include("templates/footer") %>

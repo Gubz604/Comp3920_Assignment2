@@ -1,0 +1,13 @@
+<%- include ("templates/header") %>
+<main>
+    log in
+    <form action="/loggingIn" method="post">
+        <input name="username" type="text" placeholder="username">
+        <input name="password" type="password" placeholder="password">
+        <button>Submit</button>
+    </form>
+    <% if (typeof missingParam !== 'undefined' && missingParam) { %>
+        <p><%= missingParam %> is missing.</p>
+    <% } %>
+</main>
+<%- include("templates/footer") %>
